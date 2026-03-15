@@ -1,4 +1,12 @@
 # pip install deepxde torch
+import torch
+import os
+
+torch.set_num_threads(40)
+torch.set_num_interop_threads(20)
+
+os.environ["DDE_BACKEND"] = "pytorch"
+
 import deepxde as dde
 import numpy as np
 import deepxde.backend as bkd

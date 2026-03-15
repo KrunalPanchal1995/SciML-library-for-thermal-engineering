@@ -1,0 +1,16 @@
+#Mini-project setup (Python): stiff kinetics surrogate faster than stiff solvers
+
+We’ll do it in two phases: (1) stiff toy to validate the pipeline → (2) plug into actual kinetics (your world).
+
+Phase 1 (toy stiff system): Robertson problem
+
+This is a canonical stiff ODE with the same numerical pathologies as chemical kinetics:
+
+
+Goal: train a neural RHS surrogate 
+fθ(y)
+fθ(y), then integrate it and compare:
+
+ - trajectory error vs reference (SciPy BDF),
+
+ - speed of RHS evaluation (this is what matters for big mechanisms).
