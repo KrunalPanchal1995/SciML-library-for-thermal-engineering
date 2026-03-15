@@ -30,19 +30,17 @@ os.environ["DDE_BACKEND"] = "pytorch"
 import deepxde as dde
 import deepxde.backend as bkd
 
-
-
 # -----------------------
 # Configuration
 # -----------------------
 dde.config.set_default_float("float64")  # helps second-derivative stability
 TRAIN = True  # set False to just restore + predict/plot
-SAVE_DIR = Path("checkpoints_heat_robin")
+SAVE_DIR = Path("checkpoints_heat_robin_RAR")
 SAVE_DIR.mkdir(exist_ok=True)
 MODEL_PREFIX = str(SAVE_DIR / "heat_hetero_robin")  # prefix (DeepXDE will add suffixes)
 
 # Collocation / training
-NUM_DOMAIN = 16384
+NUM_DOMAIN = 16383
 NUM_BOUNDARY = 2048
 TRAIN_DIST = "Sobol"   # good coverage in 2D
 RESAMPLE_PERIOD = 1000
@@ -62,7 +60,6 @@ Tinf_right = 0.0
 # Geometry
 # -----------------------
 geom = dde.geometry.Rectangle([0.0, 0.0], [1.0, 1.0])
-
 
 # -----------------------
 # Heterogeneous conductivity k(x,y)
@@ -94,7 +91,6 @@ def k_fn(X):
     k = k1 + (k2 - k1) * s
     k = k * (1.0 + 0.1 * bkd.sin(2.0 * np.pi * y))
     return k
-
 
 # -----------------------
 # PDE: div( k grad T ) = 0
@@ -166,19 +162,27 @@ exclusions = np.array([[0.0, 0.0],
                        [0.0, 1.0],
                        [1.0, 0.0],
                        [1.0, 1.0]])
+# candidate points to probe residual
+Xcand = geom.random_points(200000)
+r = np.abs(model.predict(Xcand, operator=pde)).reshape(-1)
 
+# pick worst residual points
+k_add = 4000
+Xnew = Xcand[np.argsort(-r)[:k_add]]
 
+# append to anchors and rebuild data/model (DeepXDE data is easiest rebuilt)
+anchors = np.vstack([anchors, Xnew])
 
 data = dde.data.PDE(
-    geom,
-    pde,
+    geom, 
+    pde, 
     [bc_left, bc_bottom, bc_top, bc_right],
     num_domain=NUM_DOMAIN,
     num_boundary=NUM_BOUNDARY,
     train_distribution=TRAIN_DIST,
+    anchors=anchors,
     exclusions=exclusions,
 )
-
 
 # -----------------------
 # Network + output transform (hard enforce Dirichlet on left & bottom)
@@ -223,15 +227,15 @@ save_path_txt = SAVE_DIR / "last_save_path.txt"
 if TRAIN:
     resampler = dde.callbacks.PDEPointResampler(period=RESAMPLE_PERIOD)
 
-    model.compile("adam", lr=1e-3)
+    model.compile("adam", lr=5e-4, loss_weights=[1, 0, 0, 100, 100])
     losshistory, train_state = model.train(
-        iterations=ADAM_ITERS,
+        iterations=5000,
         callbacks=[resampler],
         display_every=1000,
     )
 
     dde.optimizers.set_LBFGS_options(maxiter=LBFGS_MAXITER)
-    model.compile("L-BFGS")
+    model.compile("L-BFGS", loss_weights=[1, 0, 0, 100, 100])
     losshistory, train_state = model.train(display_every=200)
 
     # Save weights
@@ -276,7 +280,6 @@ K_field = k_np(Xg).reshape(nx, nx)
 np.savez(SAVE_DIR / "solution_grid.npz", xs=xs, ys=ys, T=T_pred, K=K_field)
 print("Saved grid solution to:", SAVE_DIR / "solution_grid.npz")
 
-
 # -----------------------
 # Plotting
 # -----------------------
@@ -298,4 +301,4 @@ plt.title("Conductivity field k(x,y)")
 plt.tight_layout()
 plt.savefig(SAVE_DIR / "k_field.png", dpi=200)
 
-plt.show()
+#plt.show()
