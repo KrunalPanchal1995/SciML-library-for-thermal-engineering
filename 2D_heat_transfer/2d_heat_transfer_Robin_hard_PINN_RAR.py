@@ -29,8 +29,8 @@ TRAIN_DIST = "Sobol"
 RESAMPLE_PERIOD = 1000
 
 # Base training per stage
-ADAM_ITERS = 5000
-LBFGS_MAXITER = 5000
+ADAM_ITERS = 20000
+LBFGS_MAXITER = 20000
 
 # RAR
 RAR_STAGES = 3            # number of refinement rounds
@@ -129,7 +129,7 @@ anchors = np.vstack([sample_top(8000), sample_right(8000)])  # start with Robin-
 
 # -----------------------
 # Network + hard Dirichlet transform (left & bottom)
-# T(x,y) = (1-y) sin(pi x) + x*y*N(x,y)
+# T(x,y) = (1-y) sin(pi x) + x*y*NN(x,y)
 # -----------------------
 net = dde.maps.FNN([2, 128, 128, 128, 128, 1], "tanh", "Glorot normal")
 
