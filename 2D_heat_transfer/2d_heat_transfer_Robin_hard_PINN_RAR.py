@@ -23,8 +23,8 @@ SAVE_DIR = Path("checkpoints_heat_robin_RAR")
 SAVE_DIR.mkdir(exist_ok=True)
 MODEL_PREFIX = str(SAVE_DIR / "heat_hetero_robin")
 
-NUM_DOMAIN = 16384        # make Sobol happy
-NUM_BOUNDARY = 2048
+NUM_DOMAIN = 4096        # make Sobol happy
+NUM_BOUNDARY = 500
 TRAIN_DIST = "Sobol"
 RESAMPLE_PERIOD = 1000
 
@@ -33,9 +33,9 @@ ADAM_ITERS = 5000
 LBFGS_MAXITER = 5000
 
 # RAR
-RAR_STAGES = 3            # number of refinement rounds
-NCAND = 200000            # candidate points to probe residual
-K_ADD = 4000              # points to add each stage
+RAR_STAGES = 1            # number of refinement rounds
+NCAND = 20000            # candidate points to probe residual
+K_ADD = 1000              # points to add each stage
 
 # Robin parameters
 h_top, h_right = 10.0, 5.0
@@ -131,8 +131,8 @@ anchors = np.vstack([sample_top(8000), sample_right(8000)])  # start with Robin-
 # Network + hard Dirichlet transform (left & bottom)
 # T(x,y) = (1-y) sin(pi x) + x*y*N(x,y)
 # -----------------------
-net = dde.maps.FNN([2, 128, 128, 128, 128, 1], "tanh", "Glorot normal")
-
+#net = dde.maps.FNN([2, 128, 128, 128, 128, 1], "tanh", "Glorot normal")
+net = dde.maps.FNN([2, 64, 64, 64, 1], "tanh", "Glorot normal")
 def out_transform(X, N):
     x = X[:, 0:1]
     y = X[:, 1:2]
