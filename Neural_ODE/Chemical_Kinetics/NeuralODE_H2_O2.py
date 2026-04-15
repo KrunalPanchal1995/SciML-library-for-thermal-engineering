@@ -24,6 +24,8 @@ import torch.nn as nn
 from torch.utils.data import DataLoader, TensorDataset
 from torchdiffeq import odeint_adjoint as odeint
 import torch.autograd.functional as AF
+torch.set_num_threads(40)
+torch.set_num_interop_threads(40)
 
 warnings.filterwarnings("ignore")
 
@@ -41,7 +43,7 @@ print(f"[INFO] Using device: {DEVICE}")
 # h2o2.yaml species order (Cantera default):
 # 0:H2  1:H  2:O  3:O2  4:OH  5:H2O  6:HO2  7:H2O2  8:AR
 OH_IDX   = 4
-N_SPECIES = 9          # 9 species + temperature (normalized)
+N_SPECIES = 10        # 9 species + temperature (normalized)
 STATE_DIM = N_SPECIES + 1   # 10-dimensional state vector
 
 # ─────────────────────────────────────────────────────────────
@@ -153,7 +155,7 @@ class NeuralODESurrogate(nn.Module):
 
     def forward(self, y0: torch.Tensor,
                 t_span: torch.Tensor,
-                solver: str = "dopri5") -> torch.Tensor:
+                solver: str = "implicit_adams") -> torch.Tensor:
         """
         y0:     (batch, state_dim)
         t_span: (n_points,)
@@ -253,7 +255,7 @@ def train(model: NeuralODESurrogate,
           lr:           float = 3e-3,
           physics_weight: float = 1e-3,
           stiff_check_every: int = 50,
-          solver: str = "dopri5") -> dict:
+          solver: str = "implicit_adams") -> dict:
     """
     Full training loop with:
       • MSE trajectory loss
@@ -381,7 +383,7 @@ def plot_results(model:      NeuralODESurrogate,
         for idx in sample_indices:
             y0    = torch.tensor(trajs[idx, 0:1, :],
                                  dtype=torch.float32, device=DEVICE)   # (1, S)
-            y_hat = model(y0, t_dev, "dopri5")                         # (T, 1, S)
+            y_hat = model(y0, t_dev, "implicit_adams")                         # (T, 1, S)
             preds.append(y_hat[:, 0, :].cpu().numpy())                 # (T, S)
 
     # ── Figure layout ────────────────────────────────────────
@@ -551,7 +553,7 @@ def benchmark(model: NeuralODESurrogate,
         torch.cuda.synchronize()
     t0 = time.perf_counter()
     with torch.no_grad():
-        _ = model(y0_batch, t_dev, "dopri5")
+        _ = model(y0_batch, t_dev, "implicit_adams")
     if DEVICE.type == "cuda":
         torch.cuda.synchronize()
     node_time = (time.perf_counter() - t0) / n_test_samples
@@ -613,7 +615,7 @@ def main():
         lr                = 3e-3,
         physics_weight    = 1e-3,
         stiff_check_every = 50,
-        solver            = "dopri5",
+        solver            = "implicit_adams",
     )
 
     # ── 7.5  Plot ─────────────────────────────────────────────

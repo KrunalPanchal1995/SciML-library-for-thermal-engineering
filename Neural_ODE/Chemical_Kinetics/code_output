@@ -1,0 +1,70 @@
+[INFO] Using device: cpu
+[DATA] Generating 120 ignition trajectories …
+  20/120 done  (T0=980 K)
+  40/120 done  (T0=1064 K)
+  60/120 done  (T0=1148 K)
+  80/120 done  (T0=1232 K)
+  100/120 done  (T0=1316 K)
+  120/120 done  (T0=1400 K)
+[DATA] Saved to 'h2_ignition_data.npy'
+
+[DATA] Shape: (120, 300, 11)   (samples × time-points × state_dim)
+[DATA] Species order: ['H2', 'H', 'O', 'O2', 'OH', 'H2O', 'HO2', 'H2O2', 'AR', 'N2']
+[DATA] OH index: 4  →  'OH'
+[MODEL] Parameters: 35,979
+
+============================================================
+  Training Neural ODE  |  solver=implicit_adams  |  epochs=300
+============================================================
+  Epoch 0010 | train=0.02922 | val=0.03200
+  Epoch 0020 | train=0.02713 | val=0.02964
+  Epoch 0030 | train=0.02539 | val=0.02766
+  Epoch 0040 | train=0.02387 | val=0.02594
+  Epoch 0050 | train=0.02255 | val=0.02442 | λ_max/λ_min=2454857.2 | ⚠  consider implicit_adams
+  Epoch 0060 | train=0.02139 | val=0.02307
+  Epoch 0070 | train=0.02037 | val=0.02188
+  Epoch 0080 | train=0.01946 | val=0.02083
+  Epoch 0090 | train=0.01868 | val=0.01990
+  Epoch 0100 | train=0.01798 | val=0.01908 | λ_max/λ_min=2225613.8 | ⚠  consider implicit_adams
+  Epoch 0110 | train=0.01737 | val=0.01836
+  Epoch 0120 | train=0.01684 | val=0.01772
+  Epoch 0130 | train=0.01638 | val=0.01717
+  Epoch 0140 | train=0.01597 | val=0.01668
+  Epoch 0150 | train=0.01562 | val=0.01626 | λ_max/λ_min=4007565.2 | ⚠  consider implicit_adams
+  Epoch 0160 | train=0.01532 | val=0.01589
+  Epoch 0170 | train=0.01506 | val=0.01558
+  Epoch 0180 | train=0.01483 | val=0.01531
+  Epoch 0190 | train=0.01464 | val=0.01508
+  Epoch 0200 | train=0.01449 | val=0.01489 | λ_max/λ_min=6097131.5 | ⚠  consider implicit_adams
+  Epoch 0210 | train=0.01436 | val=0.01474
+  Epoch 0220 | train=0.01426 | val=0.01461
+  Epoch 0230 | train=0.01417 | val=0.01451
+  Epoch 0240 | train=0.01411 | val=0.01443
+  Epoch 0250 | train=0.01407 | val=0.01438 | λ_max/λ_min=6282070.5 | ⚠  consider implicit_adams
+  Epoch 0260 | train=0.01403 | val=0.01434
+  Epoch 0270 | train=0.01401 | val=0.01432
+  Epoch 0280 | train=0.01400 | val=0.01430
+  Epoch 0290 | train=0.01400 | val=0.01430
+  Epoch 0300 | train=0.01400 | val=0.01430 | λ_max/λ_min=6527747.5 | ⚠  consider implicit_adams
+============================================================
+[TRAIN] Done.
+
+inotify_add_watch("/home/krithika/Documents/2026/PINN/2d_heat_transfer") failed: "No space left on device"
+inotify_add_watch("/home/krithika") failed: "No space left on device"
+inotify_add_watch("/home/krithika/SciML-library-for-thermal-engineering") failed: "No space left on device"
+inotify_add_watch("/home/krithika/SciML-library-for-thermal-engineering/Neural_ODE") failed: "No space left on device"
+inotify_add_watch("/home/krithika/SciML-library-for-thermal-engineering/Neural_ODE/Chemical_Kinetics") failed: "No space left on device"
+QXcbConnection: XCB error: 3 (BadWindow), sequence: 1570, resource id: 52804576, major code: 40 (TranslateCoords), minor code: 0
+[PLOT] Saved to 'neural_ode_results.png'
+
+──────────────────────────────────────────────────
+  BENCHMARK RESULTS
+──────────────────────────────────────────────────
+  Cantera (per sample):       12.41 ms
+  Neural ODE (per sample):    16.86 ms
+  Speedup:                      0.7×
+──────────────────────────────────────────────────
+  NOTE: Neural ODE slower — network not yet competitive.
+        This is expected early in training / on CPU.
+
+[SAVE] Checkpoint saved to 'neural_ode_checkpoint.pt'
